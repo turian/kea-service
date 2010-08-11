@@ -98,9 +98,9 @@ Type at command prompt:
 		
 		If xmlrpc-1.2-b1.jar is not included then the command would be:
 			
-					java %classpath%;path\to\xmlrpc-1.2-b1.jar; patch.main.KEAServer <model> [port]
+					java -cp %classpath%;path\to\xmlrpc-1.2-b1.jar; patch.main.KEAServer <model> [port]
 					
-					e.g. java %classpath%;E:\tools\xmlrpc-1.2-b1\xmlrpc-1.2-b1.jar; patch.main.KEAServer C:\Temp\my_model 8090
+					e.g. java -cp %classpath%;E:\tools\xmlrpc-1.2-b1\xmlrpc-1.2-b1.jar; patch.main.KEAServer C:\Temp\my_model 8090
 					
 
 * Java Client Example
