@@ -64,7 +64,10 @@ public class KEAServer {
 			 //http://www.fao.org/aos/agrovoc#c_23903,'Calliandra calothyrsus',0.009212,0.000122,1,1,2,0.975066,1,True
 			 //myLogger.info(instanceStr); 
 			 // pick whatever data you need
-			 String keyWord = instanceStr.substring(instanceStr.indexOf(",")+1, instanceStr.indexOf(",0"));			 
+			 String keyWord = instanceStr.substring(instanceStr.indexOf(",")+1, instanceStr.indexOf(",0"));	
+			 if (keyWord.startsWith("'") && keyWord.endsWith("'")) {
+				 keyWord = keyWord.substring(1, keyWord.length() -1);
+			 }
 			 keyWords.add(keyWord);
 		 } 
 		
@@ -240,3 +243,4 @@ public class KEAServer {
 	}
 	
 }
+
