@@ -82,6 +82,10 @@ d) set KEAXMLRPC=%KEAHOME%\patch\kea_server.jar
 e) Add %KEAXMLRPC% to your CLASSPATH environment variable.
 
 		i.e. set CLASSPATH=%KEAXMLRPC%;%CLASSPATH%;  		Note KEAXMLRPC must come first 		
+
+f) Download:
+    http://ftp.us.xemacs.org/pub/mirrors/maven2/xmlrpc/xmlrpc/1.2-b1/xmlrpc-1.2-b1.jar
+and add it also to your classpath.
 	
 ----------------------------------------------------------------------
 

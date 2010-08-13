@@ -2,7 +2,9 @@ Sanity check
 
 The approach is to create keywords and “compare” them with the ones kea has generated.
 
-Perquisites: 
+This is for Windows. If you are under Unix, you should use ./sanity_check_files.py
+
+Prequisites: 
 1.	Training has taken place and a model is generated.
 
 
