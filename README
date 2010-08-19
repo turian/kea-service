@@ -28,7 +28,7 @@ Contents:
 
 3. History 
 
-4. Copyright
+4. Compilation
 
 5. How it is done
 
@@ -73,7 +73,7 @@ a) Download the KeaXML-RPC Service.
 	
 b) Create a folder called patch in kea-5.0_full home directory (KEAHOME)
 	 
-		e.g. E:\progtams\kea-5.0_full\patch
+		e.g. E:\programs\kea-5.0_full\patch
 		
 c) Unzip the KeaXML-RPC and copy the kea_server.jar into %KEAHOME%\patch\kea_server.jar
 
@@ -199,9 +199,12 @@ Start python and import client.
 
 -----------------------------------------------------------------------
 
-4. Copyright:
--------------
+4. Compilation:
+---------------
 
+javac patch/main/KEAServer.java
+
+jar cvf0 kea_server.jar patch/main/KEAServer.class 
 
 
 -----------------------------------------------------------------------

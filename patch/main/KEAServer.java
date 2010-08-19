@@ -46,8 +46,7 @@ public class KEAServer {
 	}
 	
 
-	 public String[] extractKeyphrases(String document) {		 
-		 
+	 public String[] extractKeyphrases(String document) {
 		 List<String> keyWords = new ArrayList<String>();
 		 List<Instance> instances = null;
 
@@ -165,9 +164,9 @@ public class KEAServer {
 		
 		// Stopwords
 		ke.setStopwords(new StopwordsEnglish());
-		
+
 		// Number of Keyphrases to extract
-		ke.setNumPhrases(10);
+		ke.setNumPhrases(5);
 		
 		// Set to true, if you want to compute global dictionaries from the test collection
 		ke.setBuildGlobal(false);		
