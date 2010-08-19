@@ -11,7 +11,7 @@ s = xmlrpclib.ServerProxy('http://127.0.0.1:8000')
 
 
 import sys
-assert len(sys.argv) > 0
+assert len(sys.argv) > 1
 for ftxt in sys.argv[1:]:
     assert ftxt[-4:] == ".txt"
     fkey = ftxt[:-4] + ".key"

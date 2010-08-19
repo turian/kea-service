@@ -1,11 +1,15 @@
 Sanity check
 
-The approach is to create keywords and “compare” them with the ones kea has generated.
+The approach is to create keywords and compare them with the ones kea has generated.
 
 This is for Windows. If you are under Unix, you should use ./sanity_check_files.py
 
 Prequisites: 
-1.	Training has taken place and a model is generated.
+1.	Training has taken place and a model is generated. e.g.
+    java kea.main.KEAModelBuilder -d -l testdocs/en/train/ -m my_model -v none -f skos
+
+You can extract keyphrases for some test documents given this model:
+    java kea.main.KEAKeyphraseExtractor -l testdocs/en/test -m my_model -v none -f text
 
 
 Steps:
