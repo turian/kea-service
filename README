@@ -105,6 +105,14 @@ Type at command prompt:
 					java -cp %classpath%;path\to\xmlrpc-1.2-b1.jar; patch.main.KEAServer <model> [port]
 					
 					e.g. java -cp %classpath%;E:\tools\xmlrpc-1.2-b1\xmlrpc-1.2-b1.jar; patch.main.KEAServer C:\Temp\my_model 8090
+
+* You can also use the Python server wrapper (port 8001) on top of the
+Java server. If the Java KEA service throws an exception, the wrapper
+returns an empty list of keywords. This appears to happen on weird
+Unicode characters, in 0.3% of page text. YMMV.
+
+    ./python-server-wrapper.py
+
 					
 
 * Java Client Example

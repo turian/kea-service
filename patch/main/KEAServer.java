@@ -108,7 +108,8 @@ public class KEAServer {
 			}			
 		}
 		
-		String localhost = "127.0.0.1";	
+//		String localhost = "127.0.0.1";	
+		String localhost = "0.0.0.0";
 		try {
 			localhost = InetAddress.getLocalHost().getHostAddress();				
 		} catch (UnknownHostException e1) {
