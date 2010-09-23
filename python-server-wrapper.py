@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python2.4
 """
 Python XML-RPC server wrapper for KEA.
 If the Java KEA service throws an exception, return an empty list of
@@ -33,6 +33,7 @@ def extractKeyphrases(txt):
         broke.add(0)
         return kw
     except:
+        print >> sys.stderr, "Oops! Couldn't extract keyphrases over:", repr(txt)
         broke.add(1)
         return []
 
