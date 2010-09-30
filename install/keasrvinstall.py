@@ -1,7 +1,6 @@
 #! /usr/bin/env python
 '''
 Created on Sep 28, 2010
-lsof -s -i tcp@0.0.0.0:8001 | grep -c  keaservice
 
 @author: Isaac
 '''
