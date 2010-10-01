@@ -40,7 +40,7 @@ class keasrvinstall(object):
         self.kea_default_model_url = 'http://metaoptimize.com/data'
         self.kea_xmlrpc_jar = 'xmlrpc-1.2-b1.jar'
         self.kea_xmlrpc_jar_url = 'http://ftp.us.xemacs.org/pub/mirrors/maven2/xmlrpc/xmlrpc/1.2-b1'
-        self.kea_python_common_url = 'http://github.com/turian'
+        self.kea_python_common_url = 'git://github.com/turian/common.git'
         self.kea_python_common_name = 'common'
         self.kea_py_common_path = 'py_common'
         self.kea_java_exe = 'patch.main.KEAServer'
@@ -66,10 +66,11 @@ class keasrvinstall(object):
                                    'dest':'%s/%s/%s' % (self.kea_home, self.kea_src_name, self.kea_default_model),
                                    'required':False})
         # define python common resource parameters
-        self.kea_resorces.append({'path' : '%s/%s' % (self.kea_python_common_url, self.kea_python_common_name),
-                                   'dest':'%s/%s/%s' % (self.kea_home, self.kea_py_common_path, self.kea_python_common_name),
+        self.kea_resorces.append({'path' : '%s' % (self.kea_python_common_url),
+                                   'dest':'%s/%s' % (self.kea_home, self.kea_py_common_path),
                                    'mkdir':'%s/%s' % (self.kea_home, self.kea_py_common_path),
-                                   'required':False})
+                                   'git_cmd':'git clone ',
+                                   'required':True})
         
     def userCheck(self):
         print "user = ", getpass.getuser()
@@ -117,9 +118,17 @@ class keasrvinstall(object):
             # make the dest dir if needed
             if res.has_key('mkdir'):
                 os.makedirs(res['mkdir'])
+             
+            # if its a git resource use git to retrive it else use urllib    
+            if res.has_key('git_cmd'):
+                curent_dir = os.getcwd()
+                os.chdir(res['dest'])
+                os.system("%s %s" % (res['git_cmd'], res['path']))
+                os.chdir(curent_dir)
+            else: 
                 
-            rt = urllib.urlretrieve(res['path'], res['dest'], self.dlStatus, data=None)
-            dir(rt)
+                urllib.urlretrieve(res['path'], res['dest'], self.dlStatus, data=None)
+                
             
             #unpack if needed
             if res.has_key('unpack'):
