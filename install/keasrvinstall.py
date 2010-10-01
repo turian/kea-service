@@ -25,8 +25,10 @@ class keasrvinstall(object):
         
         self.jv_port = java_port
         self.py_port = java_port +1
-        self.start_jv = True
-        self.start_py = True
+        self.jv_pid_file = '/var/run/keasrv_jv.pid'
+        self.py_pid_file = '/var/run/keasrv_py.pid'
+        self.kea_py_log = '/var/log/kea-service_py.log'
+        self.kea_jv_log = '/var/log/kea-service_jv.log'
         self.kea_user = 'keasrv'
         self.set_kea_pass = True
         self.kea_pass = 'RunKea4ME'
@@ -41,6 +43,8 @@ class keasrvinstall(object):
         self.kea_python_common_url = 'http://github.com/turian'
         self.kea_python_common_name = 'common'
         self.kea_py_common_path = 'py_common'
+        self.kea_java_exe = 'patch.main.KEAServer'
+        self.kea_python_exe = 'python-server-wrapper.py'
         
         """ no modes below this point """
         self.kea_resorces = []
@@ -132,145 +136,31 @@ class keasrvinstall(object):
         os.system("chmod +x %s/kea-service/python-server-wrapper.py" % (self.kea_home))
         
         
-    def makeScript(self):
+    def makeConf(self):
         """ create the init.d script """
         
-        script_path = "%s/keasrvctl" % self.kea_home
-        fout = open(script_path,'w')
-        fout.write("#!/bin/bash \n\n")
-        fout.write("#control script for starting and stopping the kea service \n\n")
-        
-        fout.write("prog=keasrvctl\n")
-        if self.start_jv:
-            fout.write("JAVA_RUN=/var/run/keasrv_j.pid \n")
-            
-        if self.start_py:
-            fout.write("PY_RUN=/var/run/keasrv_p.pid\n")
-            
-        fout.write("# Source function library.\n")
-        fout.write(". /etc/rc.d/init.d/functions \n")
-        
-        clp_export_string = """export CLASSPATH="%s/kea-service/kea_server.jar:""" % self.kea_home
-        clp_export_string = "%s%s/kea-5.0_full:" % (clp_export_string, self.kea_home)
-        clp_export_string = "%s%s/kea-5.0_full/lib/commons-logging.jar:" % (clp_export_string, self.kea_home)
-        clp_export_string = "%s%s/kea-5.0_full/lib/icu4j_3_4.jar:" % (clp_export_string, self.kea_home)
-        clp_export_string = "%s%s/kea-5.0_full/lib/iri.jar:" % (clp_export_string, self.kea_home)
-        clp_export_string = "%s%s/kea-5.0_full/lib/jena.jar:" % (clp_export_string, self.kea_home)
-        clp_export_string = "%s%s/kea-5.0_full/lib/snowball.jar:" % (clp_export_string, self.kea_home)
-        clp_export_string = "%s%s/kea-5.0_full/lib/weka.jar:" % (clp_export_string, self.kea_home)
-        clp_export_string = "%s%s/kea-5.0_full/lib/xercesImpl.jar:" % (clp_export_string, self.kea_home)
-        clp_export_string = "%s%s/kea-5.0_full/lib/kea-5.0.jar:" % (clp_export_string, self.kea_home)
-        clp_export_string = """%s%s/kea-service/xmlrpc-1.2-b1.jar" \n\n""" % (clp_export_string, self.kea_home)
-        
-        fout.write(clp_export_string)
-        
-        py_export_string = """export PYTHONPATH=".:%s/py_common" \n\n""" % self.kea_home
-        fout.write(py_export_string)
-        start_code = """\n
-        \nstart() {
-        \n    echo -n $"Starting $prog: "
-        \n    JV_RETVAL=0
-        \n    PY_RETVAL=0
-        """
-        fout.write(start_code)
-        if self.start_jv:
-            start_code ="""
-                \n    if [ -f $JAVA_RUN ]; then
-                \n       PID=`cat $JAVA_RUN`
-                \n       echo java version of kea-service is already running: $PID
-                \n       exit 2;
-                \n    fi """
-                
-            fout.write(start_code)
-        if self.start_py:
-            start_code ="""
-                \n    if [ -f $PY_RUN ]; then
-                \n       PID=`cat $PY_RUN`
-                \n       echo python version of kea-service is already running: $PID
-                \n       exit 2;
-                \n    fi """
-                
-            fout.write(start_code)
-        if self.start_jv:
-            start_code ="""
-            \n    echo -n $"starting kea-service java damon $prog "
-            \n    cd %s/%s
-            \n    nohup java patch.main.KEAServer %s %s &""" % (self.kea_home, self.kea_src_name, self.kea_default_model ,self.jv_port)
-            fout.write(start_code)
-            start_code = """
-                \n    JV_RETVAL=$?
-                \n    echo
-                \n    [ $JV_RETVAL -eq 0 ] && grep patch.main.KEAServer /proc/*/cmdline | cut -d/ -f3 | head -1 > $JAVA_RUN 
-                """ 
-            fout.write(start_code)
-        if self.start_py:
-            start_code ="""
-            \n    echo -n $"starting kea-service python damon $prog "
-            \n     %s/kea-service/python-server-wrapper.py &""" % (self.kea_home)
-            fout.write(start_code)
-            start_code = """
-                \n    PY_RETVAL=$?
-                \n    echo
-                \n    [ $PY_RETVAL -eq 0 ] && grep python-server-wrapper.py /proc/*/cmdline | cut -d/ -f3 | head -1  > $PY_RUN 
-                """ 
-                
-            fout.write(start_code)
-        start_code ="""
-            \n    RETVAL=$?
-            \n    echo
-            \n    [ $PY_RETVAL -eq 0 ] && [ $JV_RETVAL -eq 0 ]
-            \n}"""
-        
-        fout.write(start_code)
-        stop_code = """\n
-            \nstop() {
-            \n    echo -n $"Stopping $prog:" """
-        fout.write(stop_code)
-        if self.start_py:
-            stop_code = """
-                \n    killproc -p $PY_RUN 
-                \n    PY_RETVAL=$?
-                \n    echo
-                \n    [ $PY_RETVAL = 0 ] && rm -f $PY_RUN"""
-            fout.write(stop_code)
-        if self.start_jv:
-            stop_code = """
-                \n    killproc -p $JAVA_RUN 
-                \n    JV_RETVAL=$?
-                \n    echo
-                \n    [ $JV_RETVAL = 0 ] && rm -f $JAVA_RUN"""
-            fout.write(stop_code)
-            
-        stop_code ="""
-            \n    RETVAL=$?
-            \n    echo
-            \n    [ $PY_RETVAL -eq 0 ] && [ $JV_RETVAL -eq 0 ]
-            \n}"""
-        
-        fout.write(stop_code)
-        
-        case_block = """\n# See how we were called.\ncase "$1" in 
-          \n    start)
-          \n        start
-          \n        ;;
-          \n    stop)
-          \n        stop
-          \n        ;;
-          \n    status)
-          \n        status 
-          \n        RETVAL=$?
-          \n        ;;
-          \n    restart)
-          \n        stop
-          \n        start
-          \n        ;;
-          \n    *)
-          \n        echo $"Usage: $prog {start|stop|restart|status}"
-          \n        RETVAL=3
-        \nesac"""
-        fout.write(case_block)
+        conf_path = "/etc/kea-service.conf" 
+        fout = open(conf_path,'w')
+        fout.write("## kea-service init configuration -- created by the kea-service installer") 
+        fout.write("#\n#\n")
+        fout.write("KEAHOME=%s\n" % self.kea_home )
+        fout.write("KEAJARS=%s\n" % self.kea_src_name)
+        fout.write("KEAMODEL=%s\n" % self.kea_default_model)
+        fout.write("JAVASRV=%s\n" % self.kea_java_exe)
+        fout.write("JVPORT=%s\n" % self.jv_port)
+        fout.write("JAVALOG=%s\n" % self.kea_jv_log)
+        fout.write("PYSERV=%s\n" % self.kea_python_exe)
+        fout.write("PYLOG=%s\n" % self.kea_py_log)
+        fout.write("JAVA_RUN=%s\n" % self.jv_pid_file)
+        fout.write("PY_RUN=%s\n" % self.py_pid_file)
+        fout.write("SRVUSER=%s\n" % self.kea_user)
         fout.close()
-    
+        
+    def instInitScript(self):
+        """ copy the init script to the init.d dir and chmod it to make it ececutable """
+        print "Installing init scripts"
+        os.system("cp keasrvctl /etc/init.d/keasrvctl")
+        os.system("chmod 755 /etc/init.d/keasrvctl")
 if __name__ == "__main__":
     
     my_inst = keasrvinstall()              
@@ -278,4 +168,5 @@ if __name__ == "__main__":
     my_inst.createUser()
     my_inst.getResources()
     my_inst.copySrvc()
-    my_inst.makeScript()
+    my_inst.makeConf()
+    my_inst.instInitScript()

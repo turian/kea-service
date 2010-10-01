@@ -1,0 +1,225 @@
+#!/bin/bash 
+
+#control script for starting and stopping the kea service 
+
+prog=keasrvctl
+#JAVA_RUN=/var/run/keasrv_j.pid 
+#PY_RUN=/var/run/keasrv_p.pid
+initdir=/etc/init.d
+confpath=/etc/kea-service.conf
+
+# Source function library.
+if [ -r $initdir/functions ]; then
+        . $initdir/functions
+fi
+
+PATH=/sbin:/usr/sbin:/bin:/usr/bin
+export PATH
+
+#
+# load customized configuation settings
+#
+if [ -r $confpath ]; then
+        . $confpath
+fi
+
+
+
+# set the java class path
+CLASSPATH="$KEAHOME/kea-service/kea_server.jar:$HEAHOME/$KEAJARS:$KEAHOME/$KEAJARS/lib/commons-logging.jar:$KEAHOME/$KEAJARS/lib/icu4j_3_4.jar:$KEAHOME/$KEAJARS/lib/iri.jar:$KEAHOME/$KEAJARS/lib/jena.jar:$KEAHOME/$KEAJARS/lib/snowball.jar:$KEAHOME/$KEAJARS/lib/weka.jar:$KEAHOME/$KEAJARS/lib/xercesImpl.jar:$KEAHOME/$KEAJARS/lib/kea-5.0.jar:$KEAHOME/kea-service/xmlrpc-1.2-b1.jar" 
+export CLASSPATH
+
+PYTHONPATH=".:$KEAHOME/py_common" 
+export PYTHONPATH
+        
+# program start block
+jv_start() {
+        
+        
+    RETVAL=0
+                
+    if [ -f $JAVA_RUN ]; then
+                
+       PID=`cat $JAVA_RUN`
+       if [ $(ps -fp $PID | tail -n 1 | grep -c $JAVASRV ) -eq 0 ]; then
+       	  echo "we have a pid: $PID but the process is gone removing pid file"
+	  rm -f $JAVA_RUN
+       else
+          echo the java version of kea-service is already running: $PID
+	  echo $(ps -fp $PID | tail -n 1 )
+          exit 2;
+       fi
+    fi 
+            
+    cd $KEAHOME/$KEAJARS
+            
+    chmod 666 $JAVALOG
+    RUNCMD="cd $KEAHOME/$KEAJARS; export CLASSPATH=$CLASSPATH; /usr/bin/nohup java $JAVASRV $KEAMODEL $JVPORT 2>&1 >> $JAVALOG &"
+    #java $JAVASRV $KEAMODEL $JVPORT 2>&1 >> $JAVALOG &
+    runuser -m -s /bin/bash -l $SRVUSER -c "$RUNCMD >/dev/null 2>&1; $*" 
+
+    #/sbin/pidof -s $JAVASRV > $JAVA_RUN
+
+    grep $JAVASRV /proc/*/cmdline | cut -d/ -f3 | head -1 > $JAVA_RUN
+
+    PID=`cat $JAVA_RUN`
+    
+    echo -n $"Starting $JAVASRV: "
+
+    if [ $(ps -fp $PID | tail -n 1 | grep -c $JAVASRV ) -eq 0 ]; then
+	echo_failure
+    else
+	echo_success
+    fi
+
+    echo
+}
+
+py_start() {
+        
+        
+    RETVAL=0
+                
+    if [ -f $PY_RUN ]; then
+                
+       PID=`cat $PY_RUN`
+       if [ $(ps -fp $PID | tail -n 1 | grep -c $PYSERV ) -eq 0 ]; then
+       	  echo "we have a pid: $PID but the process is gone removing pid file"
+	  rm -f $PY_RUN
+       else
+       	  echo python version of kea-service is already running: $PID
+	  echo $(ps -fp $PID | tail -n 1 )
+          exit 2;
+       fi
+    fi 
+            
+    cd  $KEAHOME/kea-service            
+
+    CWD=$(pwd)
+
+    export PATH=.:$PATH:$(pwd)
+
+    chmod 666 $PYLOG
+    RUNCMD="cd  $KEAHOME/kea-service; export PYTHONPATH=$PYTHONPATH; export PATH=.:$PATH:$CWD;/usr/bin/nohup ./$PYSERV 2>&1 >> $PYLOG &"
+    #/usr/bin/nohup ./$PYSERV 2>&1 >> $PYLOG &
+    runuser -m -s /bin/bash - $SRVUSER -c "$RUNCMD >/dev/null 2>&1; $*" 
+
+                
+    grep $PYSERV /proc/*/cmdline | cut -d/ -f3 | head -1 > $PY_RUN
+
+    PID=`cat $PY_RUN`
+    
+    echo -n $"Starting $PYSERV: "
+
+    if [ $(ps -fp $PID | tail -n 1 | grep -c $PYSERV ) -eq 0 ]; then
+	echo_failure
+    else
+	echo_success
+    fi
+
+    echo
+}
+
+py_status(){
+
+    if [ -f $PY_RUN ]; then
+	    PID=`cat $PY_RUN`
+    
+   	 	echo -n $"Status $PYSERV: "
+
+    	if [ $(ps -fp $PID | tail -n 1 | grep -c $PYSERV ) -eq 0 ]; then
+			echo_failure
+    	else
+			echo_success
+    	fi
+	else
+		echo -n $"Status $PYSERV: not running "
+	fi
+    echo
+}
+
+jv_status(){
+
+    if [ -f $JAVA_RUN ]; then
+
+    	PID=`cat $JAVA_RUN`
+    
+    	if [ $(ps -fp $PID | tail -n 1 | grep -c $JAVASRV ) -eq 0 ]; then
+			echo_failure
+    	else
+			echo_success
+    	fi
+	else
+		echo -n $"Status $JAVASRV: not running "
+	fi
+
+    echo
+}
+            
+stop() {
+            
+    echo -n $"Stopping $PYSERV: " 
+    killproc -p $PY_RUN 
+                
+    PY_RETVAL=$?
+                
+    echo
+                
+    [ $PY_RETVAL = 0 ] && rm -f $PY_RUN
+                
+    echo -n $"Stopping  $JAVASRV: " 
+    killproc -p $JAVA_RUN 
+                
+    JV_RETVAL=$?
+                
+    echo
+                
+    [ $JV_RETVAL = 0 ] && rm -f $JAVA_RUN
+            
+    RETVAL=$?
+            
+    echo
+            
+    [ $PY_RETVAL -eq 0 ] && [ $JV_RETVAL -eq 0 ]
+    return $RETVAL
+            
+}
+# See how we were called.
+case "$1" in 
+          
+    start)
+          
+        jv_start
+
+        py_start
+          
+        ;;
+          
+    stop)
+          
+        stop
+          
+        ;;
+          
+    status)
+          
+        jv_status 
+        py_status 
+        ;;
+          
+    restart)
+          
+        stop
+          
+        jv_start
+        py_start
+          
+        ;;
+          
+    *)
+          
+        echo $"Usage: $prog {start|stop|restart|status}"
+          
+        RETVAL=3
+        
+esac
