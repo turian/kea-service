@@ -1,4 +1,4 @@
-#!/usr/bin/env python2.4
+#!/bin/env python
 """
 Python XML-RPC server wrapper for KEA.
 If the Java KEA service throws an exception, return an empty list of

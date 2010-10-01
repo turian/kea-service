@@ -1,4 +1,4 @@
-#!/usr/bin/python2.4
+#!/bin/env python
 """
 For each .txt file in the command line, check if the output of the
 XML-RPC service is identical to the .key file (which was previously
