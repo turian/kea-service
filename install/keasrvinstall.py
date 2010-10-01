@@ -170,6 +170,12 @@ class keasrvinstall(object):
         print "Installing init scripts"
         os.system("cp keasrvctl /etc/init.d/keasrvctl")
         os.system("chmod 755 /etc/init.d/keasrvctl")
+        for fpath in [self.kea_jv_log, self.kea_py_log ]:
+            fout = open(fpath,'w')
+            fout.write(" kiea service installed \n")
+            fout.close()
+            os.system("chmod 666 %s" % fpath)
+        
 if __name__ == "__main__":
     
     my_inst = keasrvinstall()              
