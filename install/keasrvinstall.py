@@ -2,7 +2,7 @@
 '''
 Created on Sep 28, 2010
 
-@author: Isaac
+@author: Isaac Jessop
 '''
 import getpass
 import commands
@@ -13,29 +13,50 @@ import sys
 
 class keasrvinstall(object):
     '''
-    classdocs
+    A class for installing the kea service on an AWS EC2 instance
     '''
 
 
-    def __init__(self, java_port = 8000):
+    def __init__(self, java_port = 8000, install_path = '/var/opt' , user_name = 'keasrv'):
         '''
+        optionally pass a port, install path and user to the init method
         set up some vars for doing the install
         modify to fit your installation
         the defaults should be fine however
         '''
-        
+        ########## begin install params definition ###############
+        # the port the java server will listen on default = 8000
         self.jv_port = java_port
+        # the port the python wrapper will listen on
         self.py_port = java_port +1
+        # where the service will be installed
+        self.kea_base_path = install_path
+        # where the pid of the running java process will be stored by the init script
+        # when the process starts. used by the init script to kill the process
         self.jv_pid_file = '/var/run/keasrv_jv.pid'
+        # where the pid of the running python wrapper process will be stored by the init script
+        # when the process starts. used by the init script to kill the process
         self.py_pid_file = '/var/run/keasrv_py.pid'
+        # the location of the python wrapers log file
         self.kea_py_log = '/var/log/kea-service_py.log'
+        # the location of the java servers log file
         self.kea_jv_log = '/var/log/kea-service_jv.log'
-        self.kea_user = 'keasrv'
-        self.set_kea_pass = True
+        # the user name the server will run as
+        self.kea_user = user_name
+        # flag to control weather or not a password is set for the user
+        self.set_kea_pass = False
+        # the users password if set
         self.kea_pass = 'RunKea4ME'
-        self.kea_home = '/home/%s' % self.kea_user
-        self.service_path = 'kea-service'
+        
+        ###################### end install params definition ###############
+        ##
+        ## don't change definitions below this point
+        ##
+        ####################################################################
+        
         self.kea_src_name = 'kea-5.0_full'
+        self.kea_home = '%s/%s' % (self.kea_base_path, self.kea_user)
+        self.service_path = 'kea-service'
         self.kea_src_url = 'http://kea-algorithm.googlecode.com/files'
         self.kea_default_model = 'kea-5.0-default_model'
         self.kea_default_model_url = 'http://metaoptimize.com/data'
@@ -46,8 +67,6 @@ class keasrvinstall(object):
         self.kea_py_common_path = 'py_common'
         self.kea_java_exe = 'patch.main.KEAServer'
         self.kea_python_exe = 'python-server-wrapper.py'
-        
-        """ no modes below this point """
         self.kea_resorces = []
         # define kea source resource parameters
         self.kea_resorces.append({'path':'%s/%s.zip' % (self.kea_src_url, self.kea_src_name), 
@@ -74,9 +93,13 @@ class keasrvinstall(object):
                                    'required':True})
         
     def userCheck(self):
+        """ make sure we are the root user """
+        # make sure we are running as root
+        # if not warn and exit
         print "user = ", getpass.getuser()
         if getpass.getuser() != 'root':
             print " the install script must be run as root"
+            self.usage()
             sys.exit()
         else:
             print " good were running as root"
@@ -84,7 +107,8 @@ class keasrvinstall(object):
     def createUser(self):
         """ create the user the service will run as """
         
-        os.system('useradd %s -c "user for running kea as a service"' % (self.kea_user))
+        # create the user and set the password if requested
+        os.system('useradd %s -d %s -c "user for running kea as a service"' % (self.kea_base_path, self.kea_user))
         print "created user %s" % self.kea_user
         if self.set_kea_pass:
             os.system("echo %s |passwd --stdin %s" % (self.kea_pass, self.kea_user))
@@ -139,7 +163,8 @@ class keasrvinstall(object):
         
     def copySrvc(self):
         """ copy the src files to the install dir """
-        
+        # copy the files from the package to the install location
+        # set group owner and permissions on the files 
         os.system('cp -r ../../kea-service/* %s/kea-service/. ' % self.kea_home)
         os.system("chgrp -R %s %s/*" % (self.kea_user, self.kea_home))
         os.system("chown -R %s %s/*" % (self.kea_user, self.kea_home))
@@ -148,8 +173,10 @@ class keasrvinstall(object):
         
     def makeConf(self):
         """ create the init.d script """
-        
+        # the location of the init script config file
         conf_path = "/etc/kea-service.conf" 
+        # open the config file
+        # and write out all the config parameters
         fout = open(conf_path,'w')
         fout.write("## kea-service init configuration -- created by the kea-service installer") 
         fout.write("#\n#\n")
@@ -169,6 +196,7 @@ class keasrvinstall(object):
         
     def instInitScript(self):
         """ copy the init script to the init.d dir and chmod it to make it ececutable """
+        
         print "Installing init scripts"
         os.system("cp keasrvctl /etc/init.d/keasrvctl")
         os.system("chmod 755 /etc/init.d/keasrvctl")
@@ -182,23 +210,62 @@ class keasrvinstall(object):
             fout.write(" kiea service installed \n")
             fout.close()
             os.system("chmod 666 %s" % fpath)
+    
+    def usage(self):
+            print "%s is not a valid port" % sys.argv[1]
+            print "usage: sudo %s portnumber \n or" % sys.argv[0]
+            print "usage: sudo %s portnumber install_path \n or" % sys.argv[0]
+            print "usage: sudo %s portnumber install_path user" % sys.argv[0]
         
 if __name__ == "__main__":
     
+    # if we have a port specified on the command line
     if len(sys.argv) > 1:
+        # make sure the port is a number
         try:
             jv_port = int(sys.argv[1])
         except ValueError:
-            print "%s is not a valid port" % sys.argv[1]
-            print "usage: %s portnumber" % sys.argv[0]
+            keasrvinstall().usage()
             sys.exit(1)
     else:
         jv_port = 8000
         
-    my_inst = keasrvinstall(jv_port)              
+    # if we have a install location specified on the command line
+    if len(sys.argv) > 2:
+        install_path = sys.argv[2]
+    else:
+        #default install path
+        install_path = "/var/opt"
+        
+    # if we have a user specified on the command line
+    if len(sys.argv) > 3:
+        install_user = sys.argv[3]
+    else:
+        # default user name
+        install_user = "keasrv"
+        
+    # create an instance of the  keasrvinstall class
+    # pass it the port install path and user name   
+    my_inst = keasrvinstall(jv_port, install_path, install_user)              
+    # make sure we are running as root
     my_inst.userCheck()
+    # create the user and install location
     my_inst.createUser()
+    # get all the resources we need to make it run
     my_inst.getResources()
+    # move the files from the packeg that we need
+    # to the install path
     my_inst.copySrvc()
+    # create the configuration file
     my_inst.makeConf()
+    # install the init scripts
     my_inst.instInitScript()
+    
+    print "Instalation complete "
+    print "kea service installed at %s/%s listening on port %s and %s" % (my_inst.kea_base_path,
+                                                                          my_inst.kea_user, 
+                                                                          my_inst.jv_port,
+                                                                          my_inst.py_port)
+    print "log files"
+    print my_inst.kea_jv_log
+    print my_inst.kea_py_log

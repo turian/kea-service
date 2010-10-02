@@ -1,3 +1,6 @@
+##### how to install the package on an AWS EC2 instance
+##### created by Isaac Jessop isaacjessop@msn.com, isaacjessop@hp.com, or zeek@zeeksgeeks.com
+##### created 2010-10-02
 
 you need a running AWS EC2 instance of image ami-30f30659
 to install the service
@@ -26,21 +29,15 @@ modify the ec2start.bat file to reflect your key names and java path
 open a command window and navigate to c:\EC2
 then do the following
 
-$> ec2start
-$> ec2-add-keypair my-keypair 
+C:\EC2> ec2start
+C:\EC2> ec2-add-keypair my-keypair > my-keypair
 
 use any name you want for your key pare
-this will output somtehing like this to the screen
-
-KEYPAIR my-key-pair ed:xx:xx: ....etc
------BEGIN RSA PRIVATE KEY-----
- then a bunch of incrypted lines between
------END RSA PRIVATE KEY-----
-
-copy and paste everything starting with the ---BEGIN
-and ending with the -----END
-and paste it into a file my-keypair
-make sure the files ends with a blank line 
+this will add the key pair to ypu aws account and 
+create a file my-keypair
+open the file in a text editor (notepad)
+and delete the first line
+also make sure there is a blank line at the end of the file
 or it wont work with putty latter
 
 C:\EC2> ec2-describe-images -x all ##can be used to show a list of all available images
@@ -111,4 +108,42 @@ sudo python keasrvinstall.py 8000
 # sudo /etc/keasrvctl stop to stop the service
 # sudo /etc/keasrvctl status the status of the service
 # sudo /etc/keasrvctl restart restart the service
+
+
+to verify your installation
+
+	C:\EC2>ec2-describe-instances
+
+get the instance id from the line that looks like this
+	INSTANCE        i-b97666d3      ami-30f30659    ec2-75-101-214-247.compute-1.amazonaws.com
+	
+	C:\EC2>ec2-reboot-instances i-b97666d3
+	
+this will reboot your instance and kick you out your putty session
+give it a 60 seconds or so then reconnect with putty and execute
+
+	[ec2-user@ip-10-122-54-62 ~]$ sudo /etc/init.d/keasrvctl status
+	
+if the service is running you will see anout put like this
+
+	[ec2-user@ip-10-122-54-62 ~]$ sudo /etc/init.d/keasrvctl status
+ 
+	Status patch.main.KEAServer:                               [  OK  ]
+	Status python-server-wrapper.py:                           [  OK  ]
+	
+to verify the ports are open and you can connect from the outside world
+from your windows command prompt 
+
+	C:\> telent ec2instancehostname port
+so for my current instance I would run
+	C:\> telnet ec2-75-101-214-247.compute-1.amazonaws.com 8000 
+
+if everything is good you will go to a  blank screen with a blinking cursor
+if not you will get some kind of a connection error like
+
+	Could not open connection to the host, on port 8000: Connect failed
+	
+hit return several times to return to windows command prompt
+
+you can repeat for port 8001 # the pyhton wrapper
 

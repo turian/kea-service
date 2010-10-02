@@ -141,7 +141,9 @@ jv_status(){
     if [ -f $JAVA_RUN ]; then
 
     	PID=`cat $JAVA_RUN`
-    
+    	
+    	echo -n $"Status $JAVASRV: "
+    	
     	if [ $(ps -fp $PID | tail -n 1 | grep -c $JAVASRV ) -eq 0 ]; then
 			echo_failure
     	else
