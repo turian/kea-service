@@ -54,6 +54,7 @@ class keasrvinstall(object):
         ##
         ####################################################################
         
+        self.conf_path = "/etc/kea-service.conf" 
         self.kea_src_name = 'kea-5.0_full'
         self.kea_home = '%s/%s' % (self.kea_base_path, self.kea_user)
         self.service_path = 'kea-service'
@@ -173,11 +174,9 @@ class keasrvinstall(object):
         
     def makeConf(self):
         """ create the init.d script """
-        # the location of the init script config file
-        conf_path = "/etc/kea-service.conf" 
         # open the config file
         # and write out all the config parameters
-        fout = open(conf_path,'w')
+        fout = open(self.conf_path,'w')
         fout.write("## kea-service init configuration -- created by the kea-service installer") 
         fout.write("#\n#\n")
         fout.write("KEAHOME=%s\n" % self.kea_home )
@@ -266,6 +265,8 @@ if __name__ == "__main__":
                                                                           my_inst.kea_user, 
                                                                           my_inst.jv_port,
                                                                           my_inst.py_port)
+    print "config file"
+    print my_inst.conf_path
     print "log files"
     print my_inst.kea_jv_log
     print my_inst.kea_py_log
