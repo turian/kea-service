@@ -1,0 +1,27 @@
+## created by Isaac Jessop 2010-10-02 zeek@zeeksgeeks.com, or isaacjessop@msn.com
+## to install on a AWS EC2 instance see the EC2/README.ec2
+for standard install on linux
+I am assumeing you already have the source downloaded and unpacked
+
+as root
+
+cd kea-service/install
+python keasrvinstall.py
+
+you can optionally specify one or all of the following port install-location and user
+
+so for example to install on port 8000 in /opt/var as user keasrv
+python keasrvinstall.py 8000 /opt/var keasrv
+
+# when the script completes 
+# start the service
+	/etc/keasrvctl start
+
+# /etc/keasrvctl stop to stop the service
+# /etc/keasrvctl status the status of the service
+# /etc/keasrvctl restart restart the service
+
+
+
+
+
