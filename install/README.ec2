@@ -2,6 +2,7 @@
 you need a running AWS EC2 instance of image ami-30f30659
 to install the service
 
+
 ######
 you can use the EC2 console at
 https://console.aws.amazon.com/ec2/home
@@ -43,7 +44,7 @@ make sure the files ends with a blank line
 or it wont work with putty latter
 
 C:\EC2> ec2-describe-images -x all ##can be used to show a list of all available images
-C:\EC2> ec2-run-instances ami-30f30659 -K my-keypair # this command will start an instance of image ami-30f30659
+C:\EC2> ec2-run-instances ami-30f30659  -t t1.micro -K my-keypair # this command will start an instance of image ami-30f30659
 C:\EC2> ec2-authorize default -p 22 # opens the port for ssh
 C:\EC2> ec2-authorize default -p 80 # opens the port for http
 C:\EC2> ec2-authorize default -p 8000 # opens default port for the java server 

@@ -5,6 +5,7 @@ Created on Sep 28, 2010
 @author: Isaac
 '''
 import getpass
+import commands
 import os
 import urllib
 import sys
@@ -171,6 +172,11 @@ class keasrvinstall(object):
         print "Installing init scripts"
         os.system("cp keasrvctl /etc/init.d/keasrvctl")
         os.system("chmod 755 /etc/init.d/keasrvctl")
+        # get the current run level
+        run_level = commands.getoutput('/sbin/runlevel').split()[1]
+        # create the start and stop links in the current run level
+        os.system("ln -s /etc/init.d/keasrvctl /etc/rc.d/rc%s.d/S99Keasrv" % run_level)
+        os.system("ln -s /etc/init.d/keasrvctl /etc/rc.d/rc%s.d/K99Keasrv" % run_level)
         for fpath in [self.kea_jv_log, self.kea_py_log ]:
             fout = open(fpath,'w')
             fout.write(" kiea service installed \n")
