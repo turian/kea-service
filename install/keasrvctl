@@ -3,8 +3,6 @@
 #control script for starting and stopping the kea service 
 
 prog=keasrvctl
-#JAVA_RUN=/var/run/keasrv_j.pid 
-#PY_RUN=/var/run/keasrv_p.pid
 initdir=/etc/init.d
 confpath=/etc/kea-service.conf
 
@@ -101,7 +99,7 @@ py_start() {
 
     chmod 666 $PYLOG
     RUNCMD="cd  $KEAHOME/kea-service; export PYTHONPATH=$PYTHONPATH; export PATH=.:$PATH:$CWD;/usr/bin/nohup ./$PYSERV 2>&1 >> $PYLOG &"
-    #/usr/bin/nohup ./$PYSERV 2>&1 >> $PYLOG &
+    #/usr/bin/nohup ./$PYSERV $PYPORT 2>&1 >> $PYLOG &
     runuser -m -s /bin/bash - $SRVUSER -c "$RUNCMD >/dev/null 2>&1; $*" 
 
                 

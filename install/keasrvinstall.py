@@ -16,7 +16,7 @@ class keasrvinstall(object):
     '''
 
 
-    def __init__(self, java_port = 8001):
+    def __init__(self, java_port = 8000):
         '''
         set up some vars for doing the install
         modify to fit your installation
@@ -157,6 +157,7 @@ class keasrvinstall(object):
         fout.write("KEAMODEL=%s\n" % self.kea_default_model)
         fout.write("JAVASRV=%s\n" % self.kea_java_exe)
         fout.write("JVPORT=%s\n" % self.jv_port)
+        fout.write("PYPORT=%s\n" % self.py_port)
         fout.write("JAVALOG=%s\n" % self.kea_jv_log)
         fout.write("PYSERV=%s\n" % self.kea_python_exe)
         fout.write("PYLOG=%s\n" % self.kea_py_log)
@@ -178,7 +179,17 @@ class keasrvinstall(object):
         
 if __name__ == "__main__":
     
-    my_inst = keasrvinstall()              
+    if len(sys.argv) > 1:
+        try:
+            jv_port = int(sys.argv[1])
+        except ValueError:
+            print "%s is not a valid port" % sys.argv[1]
+            print "usage: %s portnumber" % sys.argv[0]
+            sys.exit(1)
+    else:
+        jv_port = 8000
+        
+    my_inst = keasrvinstall(jv_port)              
     my_inst.userCheck()
     my_inst.createUser()
     my_inst.getResources()

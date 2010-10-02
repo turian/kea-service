@@ -1,0 +1,113 @@
+
+you need a running AWS EC2 instance of image ami-30f30659
+to install the service
+
+######
+you can use the EC2 console at
+https://console.aws.amazon.com/ec2/home
+to configure you instance and start it
+however you will still need the tools 
+below to create keys for connecting to the
+instance with putty
+#####
+
+#####################
+e2c config on windows
+#######################
+
+these instructions are derived from
+http://s3.amazonaws.com/AmazonEC2Tutorial/AmazonEC2Tutorial.html
+
+copy the EC2 folder to the root of your c drive
+down load your public and private keys from AWS and save them in the EC2 folder
+rename them to something easy to type like Cert.pem and Pk.pem
+modify the ec2start.bat file to reflect your key names and java path
+open a command window and navigate to c:\EC2
+then do the following
+
+$> ec2start
+$> ec2-add-keypair my-keypair 
+
+use any name you want for your key pare
+this will output somtehing like this to the screen
+
+KEYPAIR my-key-pair ed:xx:xx: ....etc
+-----BEGIN RSA PRIVATE KEY-----
+ then a bunch of incrypted lines between
+-----END RSA PRIVATE KEY-----
+
+copy and paste everything starting with the ---BEGIN
+and ending with the -----END
+and paste it into a file my-keypair
+make sure the files ends with a blank line 
+or it wont work with putty latter
+
+C:\EC2> ec2-describe-images -x all ##can be used to show a list of all available images
+C:\EC2> ec2-run-instances ami-30f30659 -K my-keypair # this command will start an instance of image ami-30f30659
+C:\EC2> ec2-authorize default -p 22 # opens the port for ssh
+C:\EC2> ec2-authorize default -p 80 # opens the port for http
+C:\EC2> ec2-authorize default -p 8000 # opens default port for the java server 
+C:\EC2> ec2-authorize default -p 8001 # opens the default port for the python server
+C:\EC2> ec2-describe-instances 
+this will list out your running instances find the image you started
+you should see a line something like this
+
+INSTANCE        i-b97666d3      ami-30f30659    ec2-75-101-214-247.compute-1.amazonaws.com
+
+the i-b97666d3 is the instance id you will need it for shutting down the instance 
+like so -- dont do it know
+	C:\EC2> ec2-terminate-instances i-b97666d3 ## this is how you terminate the instance
+
+
+you will need a client to connect to the instance you can get putty here
+http://www.chiark.greenend.org.uk/~sgtatham/putty/download.html
+you will need at least 	puttygen.exe and putty.exe 
+you will need to convert your my-keypair to work with putty
+
+run puttygen.exe
+select conversions from the top menu
+browse to C:\EC2 and select my-keypar
+select file save from the menu to save the converted key as PuttyKey.ppk ## chose a name
+run putty.exe
+on the left menu select ssh then auth
+then click the browse button.
+browse to the c:\EC2 dir and select the PuttyKey.ppk
+in the left menu select session
+on the command line run the describe instances again 
+ 
+C:\EC2> ec2-describe-instances
+ 
+it will return a list of instances like so
+
+INSTANCE        i-b97666d3      ami-30f30659    ec2-75-101-214-247.compute-1.amazonaws.com
+
+copy and paste the host name of your instance 
+into the host name input field
+in my example the host name = ec2-75-101-214-247.compute-1.amazonaws.com
+click the open button on the bottom of the putty screen
+a terminal will open to a user prompt
+the user name for the image I use in this example is ec2-user
+you wont need a password unless you used a pass phrase when you saved your PuttyKey.ppk file
+type the user name ## in this case ec2-user
+you will be connected to the running instance
+
+at the command prompt run the following commands
+sudo yum -y install git
+git clone git://github.com/turian/kea-service.git
+cd kea-service/install
+sudo python keasrvinstall.py 8000 
+
+# 8000 is the port the java service will run on the python service will
+# run on this port +1 i.e. 8001 
+# if you dont specify a port number it will default to 8000
+# if you use a differnt port
+# modify the ec2-authorize commands used earlier to reflect the ports used
+
+# when the script completes 
+# start the service
+	sudo /etc/keasrvctl start
+
+# sudo /etc/keasrvctl stop to stop the service
+# sudo /etc/keasrvctl status the status of the service
+# sudo /etc/keasrvctl restart restart the service
+

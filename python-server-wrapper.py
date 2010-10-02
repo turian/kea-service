@@ -10,7 +10,14 @@ from SimpleXMLRPCServer import SimpleXMLRPCServer
 from SimpleXMLRPCServer import SimpleXMLRPCRequestHandler
 
 import xmlrpclib
-s = xmlrpclib.ServerProxy('http://localhost:8000')
+import sys
+
+if len(sys.argv) > 1:
+    jv_port = int(sys.argv[0])
+else:
+    jv_port = 8000
+
+s = xmlrpclib.ServerProxy('http://localhost:%d' % jv_port)
 
 import sys
 
@@ -19,7 +26,7 @@ class RequestHandler(SimpleXMLRPCRequestHandler):
     rpc_paths = ('/RPC2',)
 
 # Create server
-server = SimpleXMLRPCServer(("0.0.0.0", 8001),
+server = SimpleXMLRPCServer(("0.0.0.0", jv_port + 1),
                             requestHandler=RequestHandler)
 server.register_introspection_functions()
 
