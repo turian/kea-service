@@ -108,7 +108,7 @@ class keasrvinstall(object):
         """ create the user the service will run as """
         
         # create the user and set the password if requested
-        os.system('useradd %s -d %s -c "user for running kea as a service"' % (self.kea_base_path, self.kea_user))
+        os.system('useradd %s -d %s/%s -c "user for running kea as a service"' % (self.kea_user, self.kea_base_path, self.kea_user))
         print "created user %s" % self.kea_user
         if self.set_kea_pass:
             os.system("echo %s |passwd --stdin %s" % (self.kea_pass, self.kea_user))
@@ -269,3 +269,6 @@ if __name__ == "__main__":
     print "log files"
     print my_inst.kea_jv_log
     print my_inst.kea_py_log
+
+    print "to start the service"
+    print "sudo /etc/init.d/keasrvctl start"
