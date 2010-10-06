@@ -144,7 +144,6 @@ class keasrvinstall(object):
             if res.has_key('dest') and os.path.exists(res['dest']): 
                 print "%s exists skipping if you want to update it delete the existing file" % res['dest']
                 continue
-            print "fetching %s writing to %s" % (res['path'], res['dest'])
             # make the dest dir if needed
             if res.has_key('mkdir'):
                 os.makedirs(res['mkdir'])
@@ -157,19 +156,25 @@ class keasrvinstall(object):
                 os.chdir(curent_dir)
             # if it has a yum install key its a resource needing instal by yum
             elif res.has_key('yum_install'):
+                # check to see if the resource is already installed
                 if commands.getoutput('whereis %s' % res['whereis_query']) == res['whereis_fail']:
                     print "Installing %s" % res['res_name']
+                    # execute the yum install
                     py_inst_result = commands.getoutput(res['yum_install'])
                     print py_inst_result
-                    if py_inst_result.split('\n')[-1].find('Complete') > 0:
+                    # check for yum's last line complete message
+                    if py_inst_result.split('\n')[-1].find('Complete') > -1:
                         print " %s install completed" % res['res_name']
                     else:
+                        # looks like the yum install failed so print a message
+                        # and exit
                         print "fatal error could not install %s" % res['res_name']
                         sys.exit()
                 else:
-                    print "python 2.4 allready installed"
+                    print "%s already installed" % res['res_name']
             else: 
-                
+                # default to using urllib to get the resource
+                print "fetching %s writing to %s" % (res['path'], res['dest'])
                 urllib.urlretrieve(res['path'], res['dest'], self.dlStatus, data=None)
                 
             
