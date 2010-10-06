@@ -155,6 +155,7 @@ class keasrvinstall(object):
                 os.chdir(res['dest'])
                 os.system("%s %s" % (res['git_cmd'], res['path']))
                 os.chdir(curent_dir)
+            # if it has a yum install key its a resource needing instal by yum
             elif res.has_key('yum_install'):
                 if commands.getoutput('whereis %s' % res['whereis_query']) == res['whereis_fail']:
                     print "Installing %s" % res['res_name']
