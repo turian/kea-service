@@ -226,8 +226,9 @@ class keasrvinstall(object):
             fout.close()
             os.system("chmod 666 %s" % fpath)
     
-    def usage(self):
-            print "%s is not a valid port" % sys.argv[1]
+    def usage(self, reason = 'user'):
+            if reason == 'port':
+                print "%s is not a valid port" % sys.argv[1]
             print "usage: sudo %s portnumber \n or" % sys.argv[0]
             print "usage: sudo %s portnumber install_path \n or" % sys.argv[0]
             print "usage: sudo %s portnumber install_path user" % sys.argv[0]
@@ -240,7 +241,7 @@ if __name__ == "__main__":
         try:
             jv_port = int(sys.argv[1])
         except ValueError:
-            keasrvinstall().usage()
+            keasrvinstall().usage("port")
             sys.exit(1)
     else:
         jv_port = 8000
