@@ -92,6 +92,7 @@ class keasrvinstall(object):
                                    'mkdir':'%s/%s' % (self.kea_home, self.kea_py_common_path),
                                    'git_cmd':'git clone ',
                                    'required':True})
+        self.kea_resorces.append({'yum_install':'yum -y install python24'})
         
     def userCheck(self):
         """ make sure we are the root user """
@@ -137,7 +138,7 @@ class keasrvinstall(object):
         """ loop through the resources down load and install them """
         for res in self.kea_resorces:
             # if the file already exists at the destination go to the next file
-            if os.path.exists(res['dest']): 
+            if res.has_key('dest') and os.path.exists(res['dest']): 
                 print "%s exists skipping if you want to update it delete the existing file" % res['dest']
                 continue
             print "fetching %s writing to %s" % (res['path'], res['dest'])
@@ -151,6 +152,18 @@ class keasrvinstall(object):
                 os.chdir(res['dest'])
                 os.system("%s %s" % (res['git_cmd'], res['path']))
                 os.chdir(curent_dir)
+            elif res.has_key('yum_install'):
+                if commands.getoutput('whereis python24') == 'python24:':
+                    print " installing python2.4"
+                    py_inst_result = commands.getoutput('yum -y install python24')
+                    print py_inst_result
+                    if py_inst_result.split('\n')[-1].find('Complete') > 0:
+                        print " python2.4 install completed"
+                    else:
+                        print "fatal error could not install python2.4"
+                        sys.exit()
+                else:
+                    print "python 2.4 allready installed"
             else: 
                 
                 urllib.urlretrieve(res['path'], res['dest'], self.dlStatus, data=None)
