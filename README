@@ -113,6 +113,8 @@ Unicode characters, in 0.3% of page text. YMMV.
 
     ./python-server-wrapper.py
 
+Note that Python server wrapper doesn't seem to work under Pytohn 2.6. It does work under 2.4.
+
 					
 
 * Java Client Example

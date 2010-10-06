@@ -1,0 +1,4 @@
+If you are interested in running kea-service as a Unix service (with
+'start' and 'stop' commands), look in install/README
+
+The installation code was designed for EC2 running the Amazon RedHat AMI.

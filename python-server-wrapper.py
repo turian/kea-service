@@ -1,4 +1,4 @@
-#!/bin/env python
+#!/bin/env python2.4
 """
 Python XML-RPC server wrapper for KEA.
 If the Java KEA service throws an exception, return an empty list of
@@ -16,6 +16,8 @@ if len(sys.argv) > 1:
     jv_port = int(sys.argv[0])
 else:
     jv_port = 8000
+
+print "jv_port = ", jv_port
 
 s = xmlrpclib.ServerProxy('http://localhost:%d' % jv_port)
 
