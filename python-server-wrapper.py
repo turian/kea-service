@@ -11,7 +11,8 @@ from SimpleXMLRPCServer import SimpleXMLRPCRequestHandler
 
 import xmlrpclib
 import sys
-
+# if we are passed a port use it
+# else use 8000 
 if len(sys.argv) > 1:
     jv_port = int(sys.argv[0])
 else:
