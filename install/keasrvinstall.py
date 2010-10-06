@@ -92,7 +92,10 @@ class keasrvinstall(object):
                                    'mkdir':'%s/%s' % (self.kea_home, self.kea_py_common_path),
                                    'git_cmd':'git clone ',
                                    'required':True})
-        self.kea_resorces.append({'yum_install':'yum -y install python24'})
+        self.kea_resorces.append({'yum_install':'yum -y install python24',
+                                  'whereis_query':'python24',
+                                  'whereis_fail':'python24:',
+                                  'res_name':'python 2.4'})
         
     def userCheck(self):
         """ make sure we are the root user """
@@ -153,14 +156,14 @@ class keasrvinstall(object):
                 os.system("%s %s" % (res['git_cmd'], res['path']))
                 os.chdir(curent_dir)
             elif res.has_key('yum_install'):
-                if commands.getoutput('whereis python24') == 'python24:':
-                    print " installing python2.4"
-                    py_inst_result = commands.getoutput('yum -y install python24')
+                if commands.getoutput('whereis %s' % res['whereis_query']) == res['whereis_fail']:
+                    print "Installing %s" % res['res_name']
+                    py_inst_result = commands.getoutput(res['yum_install'])
                     print py_inst_result
                     if py_inst_result.split('\n')[-1].find('Complete') > 0:
-                        print " python2.4 install completed"
+                        print " %s install completed" % res['res_name']
                     else:
-                        print "fatal error could not install python2.4"
+                        print "fatal error could not install %s" % res['res_name']
                         sys.exit()
                 else:
                     print "python 2.4 allready installed"
