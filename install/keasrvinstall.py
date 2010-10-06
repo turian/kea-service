@@ -158,7 +158,7 @@ class keasrvinstall(object):
             elif res.has_key('yum_install'):
                 # check to see if the resource is already installed
                 if commands.getoutput('whereis %s' % res['whereis_query']) == res['whereis_fail']:
-                    print "Installing %s" % res['res_name']
+                    print "\n\nInstalling %s" % res['res_name']
                     # execute the yum install
                     py_inst_result = commands.getoutput(res['yum_install'])
                     print py_inst_result
@@ -230,7 +230,8 @@ class keasrvinstall(object):
             fout = open(fpath,'w')
             fout.write(" kiea service installed \n")
             fout.close()
-            os.system("chmod 666 %s" % fpath)
+            os.system("chmod 664 %s" % fpath)
+            os.system("chgrp %s %s" % (self.kea_user, fpath))
     
     def usage(self, reason = 'user'):
             if reason == 'port':
