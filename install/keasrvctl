@@ -65,7 +65,7 @@ jv_start() {
     PID=`cat $JAVA_RUN`
     
     echo -n $"Starting $JAVASRV: "
-    echo -n $"Starting $JAVASRV: " >> $JAVALOG
+    echo  $"Starting $JAVASRV: " >> $JAVALOG
 
 	# verify that the server is actually running
 	# py looking for the process id we recorded associated with the name of the process
@@ -119,7 +119,7 @@ py_start() {
     PID=`cat $PY_RUN`
     
     echo -n $"Starting $PYSERV: "
-    echo -n $"Starting $PYSERV: " >> $PYLOG
+    echo  $"Starting $PYSERV: " >> $PYLOG
 
 	# verify that the server is actually running
 	# py looking for the process id we recorded associated with the name of the process
@@ -185,7 +185,7 @@ jv_status(){
 stop() {
             
     echo -n $"Stopping $PYSERV: " 
-    echo -n $"Stopping $PYSERV: " >> $PYLOG
+    echo  $"Stopping $PYSERV: " >> $PYLOG
     # use the kill proc function
     # to kill the python server
     # passing it the location of the python pid file
@@ -198,9 +198,9 @@ stop() {
                 
     [ $PY_RETVAL = 0 ] && rm -f $PY_RUN
                 
-    echo -n $"$PYSERV: stopped $PY_RETVAL" >> $PYLOG
+    echo  $"$PYSERV: stopped $PY_RETVAL" >> $PYLOG
     echo -n $"Stopping  $JAVASRV: " 
-    echo -n $"Stopping  $JAVASRV: "  >> $JAVALOG
+    echo  $"Stopping  $JAVASRV: "  >> $JAVALOG
     
     # passs killproc the pid file for the java service
     killproc -p $JAVA_RUN 
@@ -216,7 +216,7 @@ stop() {
     echo
             
     [ $PY_RETVAL -eq 0 ] && [ $JV_RETVAL -eq 0 ]
-    echo -n $"$JAVASRV: Stopped $JV_RETVAL" >> $JAVALOG
+    echo  $"$JAVASRV: Stopped $JV_RETVAL" >> $JAVALOG
     return $RETVAL
             
 }
