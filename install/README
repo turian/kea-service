@@ -1,27 +1,115 @@
 ## created by Isaac Jessop 2010-10-02 zeek@zeeksgeeks.com, or isaacjessop@msn.com
 ## to install on a AWS EC2 instance see the EC2/README.ec2
 for standard install on linux
-I am assumeing you already have the source downloaded and unpacked
-
+I am assuming you already have the source down loaded and unpacked
 as root
 
+# quick install and server start
 cd kea-service/install
 python keasrvinstall.py
+sudo /etc/init.d/keasrvctl start
 
-you can optionally specify one or all of the following port install-location and user
 
-so for example to install on port 8000 in /opt/var as user keasrv
-python keasrvinstall.py 8000 /opt/var keasrv
+##########################
+what the install script (keasrvinstall.py) dose
 
-# when the script completes 
-# start the service
-	/etc/keasrvctl start
+if run without input parameters 
+it will install the java service on port 8000
+the python service on 8001
+it will create a user named keasrv
+it will in stall at /var/opt/keasrv
 
+input parameters can be specified in the following order
+
+port: default is 8000
+the java service will be installed on this port,
+The python service will be installed on this port + 1
+
+install location : default is /var/opt
+a user account will be created  in this location
+and files needed to run the service are copied into this location
+
+user : default keasrv
+a user is created on this system with this name
+by default the password for this account is unset
+this can be changed by editing the following lines in the script
+
+   # flag to control weather or not a password is set for the user
+    self.set_kea_pass = False  ** change this to True
+    # the users password if set
+    self.kea_pass = 'RunKea4ME' ** enter the desired password here
+   
+    then rerun the script -- or as root just set the password
+    sudo passwd keasrv ** and follow the prompts 
+   
+
+the main program control is as follows
+
+    my_inst.userCheck()
+    #this line calls a method to verify the script is being run by the root user
+    #if not the script prints out a notice to that effect and exits
+    
+    my_inst.createUser()
+    # create the user and install location
+    # this line calls the method to create the user account
+    # and install directory
+    
+    my_inst.getResources()
+    #this line calls a method to fetch / install all the resources need to make it work
+    # it loops through a list of configured resources
+    # checks to see if they are installed if not it installs them
+    # if you want the force the script to reinstall everything, then run the following
+    # sudo userdel -rf keasrv (or the user name you specified at install)
+    # this will remove the user from the system and the users files
+    # then run the install script again
+    
+    my_inst.copySrvc()
+    # move the files from the source to the install dir
+    
+    
+    my_inst.makeConf()
+    # creates the configuration file
+    # writes the config parameters for the init script to /etc/kea-service.conf
+    # with the following key value pairs
+    # these are loaded amd used by the init script located at /etc/init.d/keasrvctl
+    KEAHOME=/var/opt/keasrv               # the installed path
+	KEAJARS=kea-5.0_full				  # the sud dir int the install dir where the java class can be found
+	KEAMODEL=kea-5.0-default_model        # the name of the model to load at run time
+	JAVASRV=patch.main.KEAServer		  # the java class to start
+	JVPORT=8000							  # the port the java server will listen on
+	PYPORT=8001							  # the port the python wrapper will listen on
+	JAVALOG=/var/log/kea-service_jv.log   # the output of the java server will be logged here
+	PYSERV=python-server-wrapper.py       # the name of the python wrapper script
+	PYLOG=/var/log/kea-service_py.log     # the output of the python wrapper -- if any will be logged here
+	JAVA_RUN=/var/run/keasrv_jv.pid       # the pid of the running java process is stored here
+	PY_RUN=/var/run/keasrv_py.pid	      # the pid of the running python process is stored here
+	SRVUSER=keasrv						  # the user name the service is running as
+	
+    
+    
+    my_inst.instInitScript()
+    # install the init scripts
+    # copy the init script (keasrvctl) to /etc/init.d/keasrvctl
+    # create links in the current run level dir for starting and stopping
+    # the service at boot / reboot time
+    	/etc/rc.d/rc3.d/S99Keasrv
+    	/etc/rc.d/rc3.d/K99Keasrv
+    	
+    # the script finishes by printing a few helpfull peases of information
+    
+    Installation complete
+	kea service installed at /var/opt/keasrv listening on port 8000 and 8001
+	config file
+	/etc/kea-service.conf
+	log files
+	/var/log/kea-service_jv.log
+	/var/log/kea-service_py.log
+	to start the service
+	sudo /etc/init.d/keasrvctl start
+    
 # /etc/keasrvctl stop to stop the service
 # /etc/keasrvctl status the status of the service
 # /etc/keasrvctl restart restart the service
-
-
 
 
 

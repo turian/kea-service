@@ -284,7 +284,7 @@ if __name__ == "__main__":
     # install the init scripts
     my_inst.instInitScript()
     
-    print "Instalation complete "
+    print "Installation complete "
     print "kea service installed at %s/%s listening on port %s and %s" % (my_inst.kea_base_path,
                                                                           my_inst.kea_user, 
                                                                           my_inst.jv_port,

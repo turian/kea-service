@@ -15,7 +15,7 @@ PATH=/sbin:/usr/sbin:/bin:/usr/bin
 export PATH
 
 #
-# load customized configuation settings
+# load customized configuration settings
 #
 if [ -r $confpath ]; then
         . $confpath
@@ -26,105 +26,125 @@ fi
 # set the java class path
 CLASSPATH="$KEAHOME/kea-service/kea_server.jar:$HEAHOME/$KEAJARS:$KEAHOME/$KEAJARS/lib/commons-logging.jar:$KEAHOME/$KEAJARS/lib/icu4j_3_4.jar:$KEAHOME/$KEAJARS/lib/iri.jar:$KEAHOME/$KEAJARS/lib/jena.jar:$KEAHOME/$KEAJARS/lib/snowball.jar:$KEAHOME/$KEAJARS/lib/weka.jar:$KEAHOME/$KEAJARS/lib/xercesImpl.jar:$KEAHOME/$KEAJARS/lib/kea-5.0.jar:$KEAHOME/kea-service/xmlrpc-1.2-b1.jar" 
 export CLASSPATH
-
+# set the PYTHON path 
 PYTHONPATH=".:$KEAHOME/py_common" 
 export PYTHONPATH
         
 # program start block
+# function for starting the java server
 jv_start() {
         
-        
-    RETVAL=0
-                
+    # check to see if the java pid file exists
     if [ -f $JAVA_RUN ]; then
                 
        PID=`cat $JAVA_RUN`
        if [ $(ps -fp $PID | tail -n 1 | grep -c $JAVASRV ) -eq 0 ]; then
        	  echo "we have a pid: $PID but the process is gone removing pid file"
+       	  echo "we have a pid: $PID but the process is gone removing pid file" >> $JAVALOG
+      # remove the pid file
 	  rm -f $JAVA_RUN
        else
           echo the java version of kea-service is already running: $PID
-	  echo $(ps -fp $PID | tail -n 1 )
+          echo the java version of kea-service is already running: $PID >> $JAVALOG
+	  	  echo $(ps -fp $PID | tail -n 1 )
+	      echo $(ps -fp $PID | tail -n 1 )>> $JAVALOG
+	      # exit returning an error 
           exit 2;
        fi
     fi 
             
+    # change dir to the location of the java class
     cd $KEAHOME/$KEAJARS
-            
-    chmod 666 $JAVALOG
+    #configure the command to start the java server        
     RUNCMD="cd $KEAHOME/$KEAJARS; export CLASSPATH=$CLASSPATH; /usr/bin/nohup java $JAVASRV $KEAMODEL $JVPORT 2>&1 >> $JAVALOG &"
-    #java $JAVASRV $KEAMODEL $JVPORT 2>&1 >> $JAVALOG &
-    runuser -m -s /bin/bash -l $SRVUSER -c "$RUNCMD >/dev/null 2>&1; $*" 
-
-    #/sbin/pidof -s $JAVASRV > $JAVA_RUN
-
+    # start the java service running as the kea user redirect stderr and stdout to the log
+    runuser -m -s /bin/bash -l $SRVUSER -c "$RUNCMD $*" 
+	# capture the pid of the java server and write it to the poid file
     grep $JAVASRV /proc/*/cmdline | cut -d/ -f3 | head -1 > $JAVA_RUN
 
     PID=`cat $JAVA_RUN`
     
     echo -n $"Starting $JAVASRV: "
+    echo -n $"Starting $JAVASRV: " >> $JAVALOG
 
+	# verify that the server is actually running
+	# py looking for the process id we recorded associated with the name of the process
     if [ $(ps -fp $PID | tail -n 1 | grep -c $JAVASRV ) -eq 0 ]; then
-	echo_failure
+		echo_failure
+    	echo_failure >> $JAVALOG
     else
-	echo_success
+		echo_success
+		echo_success >> $JAVALOG
     fi
 
     echo
 }
 
+# function for starting the python wrapper
 py_start() {
-        
-        
-    RETVAL=0
                 
+    
+    # check to see if the python pid file exists
     if [ -f $PY_RUN ]; then
                 
        PID=`cat $PY_RUN`
        if [ $(ps -fp $PID | tail -n 1 | grep -c $PYSERV ) -eq 0 ]; then
        	  echo "we have a pid: $PID but the process is gone removing pid file"
+       	  echo "we have a pid: $PID but the process is gone removing pid file" >> $PYLOG
 	  rm -f $PY_RUN
        else
        	  echo python version of kea-service is already running: $PID
-	  echo $(ps -fp $PID | tail -n 1 )
+       	  echo python version of kea-service is already running: $PID >> $PYLOG
+		  echo $(ps -fp $PID | tail -n 1 )
+		  echo $(ps -fp $PID | tail -n 1 ) >> $PYLOG
           exit 2;
        fi
     fi 
             
+    # change to the directory where the python wrapper is installed
     cd  $KEAHOME/kea-service            
 
+	#export the current path
     CWD=$(pwd)
-
     export PATH=.:$PATH:$(pwd)
 
-    chmod 666 $PYLOG
+	# setup the command to start the python wrapper
     RUNCMD="cd  $KEAHOME/kea-service; export PYTHONPATH=$PYTHONPATH; export PATH=.:$PATH:$CWD;/usr/bin/nohup ./$PYSERV 2>&1 >> $PYLOG &"
-    #/usr/bin/nohup ./$PYSERV $PYPORT 2>&1 >> $PYLOG &
-    runuser -m -s /bin/bash - $SRVUSER -c "$RUNCMD >/dev/null 2>&1; $*" 
+    # start the python wrapper redirecting stdout and stderr to the python log
+    runuser -m -s /bin/bash - $SRVUSER -c "$RUNCMD  $*" 
 
-                
+    # capture the pid of the python wrapper ans store it in the pid file            
     grep $PYSERV /proc/*/cmdline | cut -d/ -f3 | head -1 > $PY_RUN
 
     PID=`cat $PY_RUN`
     
     echo -n $"Starting $PYSERV: "
+    echo -n $"Starting $PYSERV: " >> $PYLOG
 
+	# verify that the server is actually running
+	# py looking for the process id we recorded associated with the name of the process
     if [ $(ps -fp $PID | tail -n 1 | grep -c $PYSERV ) -eq 0 ]; then
-	echo_failure
+		echo_failure
+		echo_failure >> $PYLOG
     else
-	echo_success
+		echo_success
+		echo_success >> $PYLOG
     fi
 
     echo
 }
 
+# function for check ing the status of the python wrapper
 py_status(){
 
+	# check if the pid file exists
+	# if id dose gead the pid from the file
     if [ -f $PY_RUN ]; then
-	    PID=`cat $PY_RUN`
     
+	    PID=`cat $PY_RUN`
+	    
    	 	echo -n $"Status $PYSERV: "
-
+		# verify the python wrapper is running as the pid read from the file
     	if [ $(ps -fp $PID | tail -n 1 | grep -c $PYSERV ) -eq 0 ]; then
 			echo_failure
     	else
@@ -136,14 +156,19 @@ py_status(){
     echo
 }
 
+# function for checking the java servers status
 jv_status(){
 
+	# check if the java pid file exists
+	# if so read the pid
     if [ -f $JAVA_RUN ]; then
 
     	PID=`cat $JAVA_RUN`
     	
     	echo -n $"Status $JAVASRV: "
     	
+    	#verify that the java service is running as the process id read
+    	# from the pid file
     	if [ $(ps -fp $PID | tail -n 1 | grep -c $JAVASRV ) -eq 0 ]; then
 			echo_failure
     	else
@@ -156,9 +181,15 @@ jv_status(){
     echo
 }
             
+# function for shutting down the servers
 stop() {
             
     echo -n $"Stopping $PYSERV: " 
+    echo -n $"Stopping $PYSERV: " >> $PYLOG
+    # use the kill proc function
+    # to kill the python server
+    # passing it the location of the python pid file
+    
     killproc -p $PY_RUN 
                 
     PY_RETVAL=$?
@@ -167,7 +198,11 @@ stop() {
                 
     [ $PY_RETVAL = 0 ] && rm -f $PY_RUN
                 
+    echo -n $"$PYSERV: stopped $PY_RETVAL" >> $PYLOG
     echo -n $"Stopping  $JAVASRV: " 
+    echo -n $"Stopping  $JAVASRV: "  >> $JAVALOG
+    
+    # passs killproc the pid file for the java service
     killproc -p $JAVA_RUN 
                 
     JV_RETVAL=$?
@@ -181,12 +216,14 @@ stop() {
     echo
             
     [ $PY_RETVAL -eq 0 ] && [ $JV_RETVAL -eq 0 ]
+    echo -n $"$JAVASRV: Stopped $JV_RETVAL" >> $JAVALOG
     return $RETVAL
             
 }
 # See how we were called.
 case "$1" in 
           
+    # if we were called with start -- start the servers
     start)
           
         jv_start
@@ -195,18 +232,21 @@ case "$1" in
           
         ;;
           
+    # if we were called wit stop -- stop the servers
     stop)
           
         stop
           
         ;;
           
+    # if we were called with status check that the servers are running
     status)
           
         jv_status 
         py_status 
         ;;
           
+    # if we were called with restart -- stop then start the servers
     restart)
           
         stop
@@ -218,6 +258,7 @@ case "$1" in
           
     *)
           
+     # else echo out a usage message
         echo $"Usage: $prog {start|stop|restart|status}"
           
         RETVAL=3
